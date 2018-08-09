@@ -1,0 +1,74 @@
+	
+	#课前练习
+		在用户目录下创建/Video/Watched
+			makedir -p /root/Video/Watched
+		
+		新建a.txt b.txt c.txt
+			touch a.txt b.txt c.txt
+			echo 'A' >a.txt && echo 'B' > b.txt && echo 'C' > c.txt
+		
+		将上述三个文件连接为一个文件
+			 cat a.txt b.txt c.txt > /root/tem/bound.txt
+		
+		讲一个日志文件的后100行复制到另外一个文件当中
+			 tail -n 100 /var.log/dmesg > ./dmesg.log.bak
+		
+		将主目录的隐藏文件名和常规文件名列出到文件中
+			ls -a > dir.txt
+		
+		压缩系统的/home目录，使用zip格式压缩，并且命名为student.tar.tz,此文件要放在/tmp/rhel7目录下
+			mkdir /tmp/rhel7
+			tar -czvf /tmp/rhel7/student.tar.gz /home
+		
+		找出用户huahuati拥有的文件，并把它们拷贝到/root/finder/目录中
+			mkdir /root/findre
+			find / -user huahuati -type f -exec cp {} /root/finder/ \;
+		
+		软件安装：
+			1.安装linux下用户图形界面管理软件	
+			2.将rhel7中python环境升级到python3
+		
+		返回initial-setup-ks.cfg文件中包含字符串'boot'的行数
+			grep 'boot' initial-setup-ks.cfg |wc -l
+			grep -c 'boot' initial-setup-ks.cfg
+		
+		返回initial-setup-ks.cfg文件中包含字符串'boot'的行与行号
+			grep -n 'boot' initial-setup-ks.cfg
+		
+		执行pa -aux命令，将文件内容保存到/root/pa.log中，查找该文件中包含2556或2557字符串的行
+			ps -aux > /root/ps.log
+			grep '255[67]' pa.log
+		
+		在上述文件中查找包含四位数的字符串，并且这个字符串最后一个数字为2
+			grep '[1-9][0-9][0-9]2' /root/ps.log
+			grep '[1-9][0-9][0-9]...s' pa.log
+
+		在当前目录下查找目录以外的所有类型文件
+			find . ! -type d
+
+		找出所有用户harry拥有的文件，并且把它们拷贝到/root/finder目录中
+			 find / -user harry -type f -exec cp {} /root/finder/ \; 2> /dev/null
+
+		查找文件更改时间比文件a.txt新但比b.txt文件旧的文件(补充知识点)
+			-newer
+			find / -newer initial-setup-ks.cfg ! -newer pa.log
+			-newer initial-setup-ks.cfg ! -newer pa.log -exec ls -lh {} \;
+
+		统计当前系统中一共有多少账户
+			wc -l /etc/passwd
+		
+		修改tom的家目录为/home/tomcat,且其基本组为mail，uid号为1111 ，密码为'123456'
+			mkdir /home/tomcat
+			usermod -g mail -d /home/tomcar -u 1111 tom
+			echo '123456' |passwd --stdin tom
+
+
+		创建系统账号名称为admin，全名为administrator，账户的家目录为/home/
+
+		admin，账户的时效时间为2022年12月24日，账户基本组为root，附加组为bin,adm,mail
+
+		查看init*文件末尾2kb的内容
+
+		创建以下几个目标目录(teach,office,finance,admin,market)
+
+

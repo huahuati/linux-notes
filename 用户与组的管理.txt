@@ -1,0 +1,63 @@
+	
+	用户与组的管理
+	1.用户是什么，用户是人吗？
+	用户是干嘛的？
+
+	Windows   administrator 用户 访问计算机的所有资源    
+
+	用户账号：
+		超级管理员：root
+		普通用户： huahuati
+		系统/程序用户：系统中为某个程序而产生的用户，这类用户不允许登录操作系统
+	组账号：
+		定义：用户的集合
+
+		基本组：与用户同名的一个组
+		附加组：将其他用户增到某个组中那么这个组称为其他用户的附加组
+	用户作用：
+		linux是一种基于用户身份对资源进行访问控制
+	UID和GID号：
+		uid（user identity）:用户标识号
+		gid(group identity):组标识号
+
+		root用户uid号：0
+		普通用户的uid号：1000-60000（rhel7） 500+(rhel6)
+		系统用户uid号：1-999（rhel7） 1-499(rhel6)
+
+	相关文件：
+		/etc/passwd  保存用户的账号信息
+				sshd:x:74:74:Privilege-separated SSH:/var/empty/sshd:/sbin/nologin
+				tcpdump:x:72:72::/:/sbin/nologin
+				huahuati:x:1000:1000:huahuati:/home/huahuati:/bin/bash
+				字段一：用户账号的名称
+				字段二：'x'代表密码占位符  /etc/shadow
+				字段三：用户账号的uid号
+				字段四：用户基本组账号的GID号
+				字段五：用户的全名
+				字段六：宿主目录(用户的家目录)
+				字段七：用户登录shell信息   /bin/bash(默认登录shell)     /sbin/nologin(不允许用户登录系统)
+		
+		/etc/shadow  保存用户的密码信息	
+				root:$6$8uQWVfx/VhIFCLZK$QTu799etE18ueyW3hshkL5vjLTrdN6TZPYh1XB19zm7QrXSg16ANoEoDv9jgTmXkvMxBwvGcFneQ6m/aVy22P1:       #用户密码信息，采用哈希 算法加密
+				17739:          上次修改密码的时间(从1970年1月开始计算)
+				0:				密码的最短有效天数
+				99999:			密码最长有效天数
+				7:				密码过期警告信息
+				:				密码过期后是否允许登录 0 不允许 10 允许十天 -1长期
+				:				密码过期时间
+				:               保留字段 (未使用)
+
+		组账号相关文件:
+			/etc/group     保存组账号基本信息
+			/etc/gshdow    保存组账号的密码信息
+
+		用户和组管理软件：
+
+			yum install system-config-users -y 
+
+		查看用户信息：
+			id 用户名
+
+
+
+

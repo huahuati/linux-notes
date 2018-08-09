@@ -1,0 +1,115 @@
+linux软件安装：
+	在win下，安装软件   exe. 双击运行即可
+
+	linux中，软件包封装的类型多样
+		常见的软件包分装类型：
+		     rpm  包拓展名为 .rpm
+		     deb  拓展名为   .deb
+		   源代码  一般为.tar.gz 或者.tar.bz2.格式的压缩包，包含程序源代码 REDME
+		   提供安装程序的软件包      install.sh ,setup ,.bin    
+
+		RPM软件包
+			由redhat公式提出
+			建立统一的数据库文件，详细记录软件包安装，卸载等变化信息，能自动分析软件包
+			推荐网站rpmfind.net
+
+			rpm软件包格式：
+			bash   		-4.2    	-9.1      .i586						.rpm
+			软件名称     版本号     发布次数    硬件平台（）noarch        拓展名
+
+		YUM源软件管理方式
+			1. YUM仓库集中化管理，管理rpm包
+			2. 很好的解决了软件包之间的依赖关系
+
+			YUM配置文件：
+			cd /etc/yum.repos.d/     此处为yun配置文件路劲
+			packagekit-media.repo    yum配置文件的示列文件
+
+			注：yum配置文件必须以  .repo结尾
+
+			yum配置文件内容
+
+			[InstallMedia]					yum表示
+			name=RHEL-7.0 Server.x86_64		yum名称
+			baseurl = file:///mnt/cdrom		yum原路径
+			gpgcheck=0						是否校验软件包的签名信息  1 校验 0不校验	
+			enabled=0						开机是否自启             1自启  0不自启
+
+使用YUM源管理软件的步骤：
+	1.配置yum配置文件
+	2.清空yum源的缓存
+	3.软件安装
+
+	mount 命令使用(挂载)
+	mount 源文件     挂载文件
+	umount 卸载
+		umount  源文件or挂载文件
+	
+	#实际在vm虚拟机中的操作
+		1. 虚拟机挂载光盘信息
+		2. 创建yum原路径     	    mkdir   /mnt/cdrom     路径随便创建
+		3. 挂载光盘到yum路径下       mount   /dev/cdrom     /mnt/cdrom
+		4. 修改yum配置文件
+			路径： /etc/yum.repos.d/
+			文件： vim dvd.repo       (一定以.repo结尾)
+			文件内容：
+				[dvd]         				#yum标识
+				name = Linux_huahuati       #yum名称
+				baseurl = file:///mnt/cdrom #yum路径
+				gpgcheck = 0                #不校验yum软件包的签名信息
+				enabled = 1                 #开机自启
+	    5. yum repolist all         查看所有yum源状态信息
+	    6. yum list all             列出所有的yum软件包
+	    7. yum clean all            清除yum缓存
+	    8. yum install 软件包名      安装yum软件包名
+
+
+	常用yum命令
+		yum remove 软件包名   #删除软件包
+		yum info   软件包名   #查看软件包信息
+		yum search 软件包名   #查找软件包
+		yum update 软件包名   #更新软件包
+
+		yum 安装软件包组
+			yum grouplist  		 #列出所有可用组
+			yum groupinfo   	 #查看组的信息
+			yum groupinstall     #安装软件包组
+			yum grouperase       #删除软件包组
+			yum groupupdata      #更新软件包组
+
+		#使用yum安装本地rpm包
+			yum localinstall ** .rpm
+
+源码安装:
+	把程序的源代码给了你，执行就行，看README
+
+		1.检查源代码所处的编译环境
+		2.编译
+		3.安装
+
+			example:
+				1.安装vmware tools
+				2.安装NTFS-3g
+					make 编译  make install 安装
+					make && make install  编译安装同时进行
+
+					作业：利用源码安装http服务(源码包自行下载)
+
+RPM软件包安装：
+	查看已经安装的rpm包信息：
+	rpm [选项] [软件名]
+
+	rpm -qa 查看系统中所有的已安装的qpm包
+	rpm -qf 查看文件或目录属于那个软件
+
+    安装/升级RPM软件包
+    	rpm [选项] 软件包文件
+    	rpm -ivh 软件包文件 
+    		-i   安装
+    		-v   显示安装过程的详细信息
+    		-h   显示安装进度，以#显示
+
+    		-U(大写)   升级某个rpm软件，若没有安装则进行安装
+    		-F(大写)   更新某个rpm软件，若没有安装，则放弃安装
+    #卸载指定的rpm软件包
+    	rpm -e   软件名

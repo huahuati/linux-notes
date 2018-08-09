@@ -1,0 +1,132 @@
+
+	LVM详细操作过程
+	RAID技术详情
+
+	逻辑卷创建:
+		1.准备物理设备(磁盘/分区)
+				#在虚拟机中添加两块磁盘(/dev/sdb1,/dev/sdc1)
+		2.创建物理卷(PV)
+				#创建PV		ex:pvcreate /dev/sdb1 /dev/sdc1
+		3.创建卷组(VG)
+				#创建VG     ex:vgcreate -s 8M vgming /dev/sdb1 /dev/sdc1  
+							注： -s 8M 设置PE块大小,默认为4M
+		4.创建逻辑卷(lv)
+				#创建LV     ex: lvcreate -n lvming -L 20G vgming
+							注: -n lvming 逻辑卷名称
+								  -L 20G    将逻辑卷的大小直接确定为20G
+								  -l 500    将逻辑卷的大小设置为500PE块    
+		5.创建文件系统(mkfs)
+			   #创建问价系统 ex：mkfs -t ext4 /dev/vgming/lvming
+			   				      ex：mkfs -t ext4 /dev/mapper/vgming-lvming
+		6.进行挂载(用mount命令进行挂载)
+				#创建挂载目录：
+					ex:mkdir /mnt/class
+					1.一次性挂载: ex: mount /dev/vgming/lvming /mnt/class
+					2.永久性挂载(/etc/fstab):  /dev/vgming/lvming   /mnt/class  ext4   defaults 0 0
+								 ex: mount -a
+				查看挂载:
+					df-hT
+					mount
+		7.验证逻辑卷可用性
+				ex:cd /mnt/class
+				ex:echo 'wai mian shui zai ganma chaosi la' > tongbao.file
+				ex: cat tongbao.file
+
+		8.查看PV
+			ex：pvdisplay /dev/sdb1
+
+			--- Physical volume ---
+ 		PV Name               /dev/sdb1
+  		VG Name               vgming
+  		PV Size               20.00 GiB / not usable 7.00 MiB
+  		Allocatable           yes (but full)
+  		PE Size               8.00 MiB
+  		Total PE              2559
+  		Free PE               0
+  		Allocated PE          2559
+  		PV UUID               5mY1Nl-tf2i-6Ara-7slN-WDIH-tg5m-U0vizt
+
+  		9.查看VG
+  			ex：vgdisplay vgming
+  			 --- Volume group ---
+  		VG Name               vgming
+  		System ID             
+ 		Format                lvm2
+ 		Metadata Areas        2
+ 		Metadata Sequence No  2
+  		VG Access             read/write
+  		VG Status             resizable
+  		MAX LV                0
+ 		Cur LV                1
+  		Open LV               1
+  		Max PV                0
+  		Cur PV                2
+  		Act PV                2
+  		VG Size               39.98 GiB
+ 		PE Size               8.00 MiB
+ 		Total PE              5118
+  		Alloc PE / Size       2560 / 20.00 GiB
+  		Free  PE / Size       2558 / 19.98 GiB
+  		VG UUID               M962M5-ZhwG-xD7M-cfkF-wHGg-YRqd-SPun37
+
+  		10.查看LV：
+  			ex：lvdisplay /dev/vgming/pvming
+
+  		11.删除逻辑卷:
+  			1.卸载文件系统
+  				ex:umount /dev/class
+  			2.删除逻辑卷
+  				ex:lvremove /dev/vgming/lvming
+  			3.移除卷组：
+  				ex:vgremove vgming
+  			4.删除物理卷
+  				ex:pvremove /dev/sdb1  /dev/sdc1
+
+    逻辑卷扩展:
+    	扩展和缩减卷组:(缩减太危险)
+    		扩展卷组:
+    			准备需要扩展的pv
+    			ex:pvcreate /dev/sdd1
+    			ex:vgextend vgming /dev/sdd1
+    		缩减卷组:
+    			1.移动物理区段(在VG空间足够的情况下，将别移除的pv物理区域从新分配到vg中)
+    				pvmove /dev/sdb1
+    			2.缩减卷组空间
+    				vgreduce vgming /dev/sdb1
+    	扩展逻辑卷:
+    		一.基于xfs文件系统的逻辑卷扩展:
+    			1.验证卷组是否有可用的空间
+    				vgdisplay vgming
+    				................
+    				   Free PE /size 
+    				................
+    			2.扩展逻辑卷
+    				lvextend -L 20G /dev/vgming/lvming
+    			3.扩展文件系统
+    				xfs_growfs /mnt/xfs_dir
+    			4.验证是否扩展成功
+    				df -hT
+    		二.基于ext4文件系统的扩展:
+    			1.验证卷组是否有可用的扩展空间:
+    				vgdisplay vgming
+    				................
+    				   Free PE /size 
+    				................
+    			2.扩展逻辑卷:
+    				lvextend -L 10G /dev/vgming/lvming
+    			3.扩展文件系统:
+    				resize2fs /dev/mapper/vgming-lvming
+    			4.验证是否扩展成功
+    				df -hT
+
+
+    		注意：
+    		xfs_growfs个resize2fs 之间的主要区别是为识别文件系统而传递参数。
+    		xfs_growfs 采用挂载点，resize2fs采用逻辑卷名称
+
+    		扩展参数的选择:
+    			lvextend -L 10G    	 将逻辑卷的大小正好调为10G
+    			lvextend -L +10G     将逻辑卷大小在原基础之上增加10G
+    			lvextend -l 1000     将逻辑卷的大小正好调整为1000个PE块大小
+    			lvextend -l +1000 	 将逻辑卷大小咋原基础之上增加1000PE块
+    			lvextend -l +%50FREE 想LV中添加VG中当前可用空间的50% 

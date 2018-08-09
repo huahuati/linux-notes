@@ -1,0 +1,102 @@
+
+	linux下文件/目录的权限和归属信息
+		访问权限：
+			读取(r)：允许查看文件内容，显示目录列表
+			写入(w):允许修改文件内容，允许目录中新建，删除，移动文件或者子目录
+			可执行:(x)允许运行程序，切换目录
+			无权限(-)：没有权限
+		归属(所有权)
+			属主：拥有该文件或目录的用户账号
+			属组：拥有该文件或目录的组账号
+
+
+	-  rw-r--r--    .     1 root root  1260 Jul 27 02:18 initial-setup-ks.cfg
+	
+	d  rwxr-xr-x    .     2 root root     6 Jul 27 02:20 Music
+
+	- :代表普通文件
+	d :代表目录
+	c 代表字符型文件
+	l 代表连接文件
+
+	rwxr-xr-x    .     2 root root
+	rwx       r-x  		r-x        root   root
+	属主权限  属组权限	其他人权限  属主    属主
+
+	权限项  		读  写  执行   		读  写  执行   	 读  写  执行   r w -   r - - r - -
+    字符表示     r   w   x     		r    w   x     	 r   w   x     4 2 0   4 0 0  4 0 0
+    数字表示     4   2   1     		4    2   1     	 4   2   1		 6       4      4
+    权限分配     文件所有者(属主)  	文件所属组(属组) 	  其他用户
+
+    权限的修改
+    	格式一:
+    		chmod [ugoa][+-=][rwx] 文件或者目录
+    			u,g,o,a 分别代表属主，属组，其他用户，所有用户
+    			+，-，=分别代表增加，减去，设置一个权限
+
+    			ex：
+    				-rw-r--r--. 1 root root     2 Jul 29 23:32 a.txt
+    				chmod g+w,o+w /root/a.txt
+    				-rw-rw-rw-. 1 root root     2 Jul 29 23:32 a.txt
+
+    		chmod  nnn (三位八进制数)   文件或者目录
+    			ex : chmod 644 /root/a.txt
+
+    常用选项：
+    	-R 递归修改指定目录下所有文件或子目录的权限
+
+    归属权限修改:
+    	格式:
+    		chown    属主    文件或目录
+    		chown    :属组    文件或目录
+    		chown    属主：属组 文件或目录
+
+    	常用选项:
+    		-R    递归修改指定目录下所有文件或子目录的归属权限
+
+    练习题：
+    	新建文件bb.txt，属主为harry，属组为manaager，属主可以读写执行，属组可以读写执行，其他人读
+
+    		touch /root/bb.txt
+    		useradd harry
+    		chown harry:manager /root/bb.txt
+    		chmod 774 /root/bb.txt
+
+    	新需求：
+    		设置susa用户对文件拥有读和执行的权限
+    		设置group组内成员可以对文件拥有读的权限
+
+    ACL权限：
+    	ACL(access control list), 主要目的是在提供传统的owner,group,others的read,write,execute权限之外细部权限设定
+
+    	ACL可以针对单一使用者，或者单一文件/目录进行,r,w,x的权限使用规范
+
+    	设置ACL：
+    		setfacl -m u:username:rw filename
+    		setfacl -m g:groupname:rwx filename
+    	查看：
+    		getfacl filename
+    	删除:
+    		setfacl -x u:username filename
+    
+    特殊权限：
+    	umask 反掩码 0022(默认)  权限的一种补码
+    	root用户身份默认权限
+    		 drwxr-xr-x. 2 root  root       6 Jul 31 01:30 root_dir   	644
+    	     -rw-r--r--. 1 root  root       0 Jul 31 01:29 root_file  	755
+    	
+    	umask 反掩码 0002(默认)
+    	普通用户身份默认权限
+    		 drwxrwxr-x. 2 huahuati huahuati 6 Jul 31 01:32 harry_dir   775
+    		 -rw-rw-r--. 1 huahuati huahuati 0 Jul 31 01:32 harry_file	664
+
+    附加权限:
+    	SET位权限:
+    		SUID:为可执行文件设置(文件具有x位权限)，权限表示字符:'s' u+s  4***  chmod u+s 文件名
+    		     当执行这个可执行文件时，调用该文件的属主的身份执行
+    		SGID:老鼠的儿子会打洞      g+s  2***     chmod g+s 文件名
+    			 一般设置在命令上，这时候在该目录下新建的文件或者里面目录自动继承父目录的属组
+    	粘滞位权限(sticky)：1*** o+t
+    		为公共目录设置(777)，标识为't'  chmod o+t 文件名
+    		用户不能删除其目录中其他用户的文件
+    		/tmp,/var.tmp

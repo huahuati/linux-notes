@@ -1,0 +1,61 @@
+
+	基于命令行的用户和组管理：
+		创建用户常用选项：
+		useradd [选项] username
+			-u 为账号指定uid号
+			-s 为账号指定默认的登录shell    /bin/bash(默认登录shell)     /sbin/nologin(不允许用户登录系统)
+			-g 用户的基本组号
+			-G 将用户添加到指定的附属组里面
+			-c 为用户添加文本描述
+			-d 为组目录指定不同于登录名的名称
+			-m 创建用户的家目录(默认创建)
+			-M 不创建用户的家目录
+			-p passwd  用户指定一个密码
+			-r 为用户创建一个系统账号
+			-e 指定用户账号的逾期时间 yyyy-mm-dd	userdel -r username
+
+		删除用户：
+			userdel username
+		修改用户:
+			usermod [选项] username
+				-u 重新指定用户uid号
+				-s 重新指定用户的登录shell
+				-g 指定基本组
+				-G 将用户添加到附加组内
+
+				-L 用于锁定账号，使用户无法登录
+				-U 用于解除账号锁定，使用用户能够登录
+		查看用户信息
+			id username
+		为用户创建密码：
+			passwd username
+			echo "default(密码)" | passwd --stdin harry(用户名)
+
+		更改用户密码信息：
+			chage -m 0 -M 90 -w 7 -I -1 username
+				  -d 0 强制用户下次登录修改密码
+				  -E YYYY-MM-DD   指定密码的过期时间
+				  -l username     列出用户当前密码设置
+
+
+		创建组：
+			groupadd [选项] groupname
+				-g 指定组的gid号
+		删除组：
+		    groupdel groupname
+
+	查看当前登录的系统用户有哪些：
+		users, w, who
+
+		11:20:00 up    2:36,    2 users,    load average: 0.20, 0.18, 0.17
+		登录时间      运行时间   用户总数     负载程度(1/5/15)
+
+		USER       TTY          LOGIN@    IDLE   		JCPU   				  PCPU WHAT
+		登录用户   登录所用终端   登录时间   用户空闲时间  任务执行后消耗cup时间   任务执行时间
+		root       :0           08:44     ?xdm?        13:46      0.17s gdm-session-worker [pam/gdm-pas
+		root      pts/0         08:47     0.00s        0.34s      0.00s w
+
+	whoami 		显示当前用户下的用户名
+	who am i 	显示登录时用的用户名
+	who         显示当前真正登录系统中的用户(不会显示su切换的用户)
+

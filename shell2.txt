@@ -1,0 +1,28 @@
+### 在linux中不以后缀区分文件	
+	mkdir:创建一个新目录
+		格式：mkdir[选项-p][路径]目录名
+			- p 递归创建多级目录
+			mkdir -p b/c/e/f/g
+	rmdir:删除一个空目录
+			rmdir bdir/
+			- p 递归删除多级目录
+			rmdir -p a/b/c 
+	touch 创建一个新文件，更新文件标记
+		格式：touch 文件名
+		
+	echo "hello world" 相当于 python中的 print("hello world")
+	
+	cp:复制文件或者目录
+		格式：cp[选项] 源文件/目录   目标文件/目录
+		cp /root/aa/a.txt      /root/bb/
+		cp ../aa/a.txt         .
+	复制整个目录
+		cp aa -r               /root/bb/
+	备份文件：
+		cp a.text              b.text
+	rm:删除文件或目录
+		格式:rm[选项]文件或者目录
+		- r 递归删除整个目录数
+		- f 强制删除不给任何提示
+		- rf * 从删库到跑路
+		

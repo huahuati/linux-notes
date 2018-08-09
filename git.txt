@@ -1,0 +1,62 @@
+git的基本命令
+	- 进入你想要管理的文件夹
+	- git init    初始化
+	- git status  查看当前的管理状态
+	- git add .   
+	- git commit -m '内容'  提交到远程仓库
+	- git log	  打印提交日志
+	- git reset --hard  回到原来的状态 
+	- git reflog		
+	- git reset --hard  回到原来的状态
+
+问题：当在某个功能开发到一半时，如果想要回到原来的状态修复原来的代码
+    - git stash             将当前工作区所有修改过的内容存储到“某个地方”，将工作区还原到当前版本未修改过的状态
+	- git stash pop       将第一个记录从“某个地方”重新拿到工作区（可能有冲突）
+    - git stash list        查看“某个地方”存储的所有记录
+    - git stash clear     清空“某个地方”
+    - git stash apply     编号, 将指定编号记录从“某个地方”重新拿到工作区（可能有冲突） 
+    - git stash drop      编号，删除指定编号的记录
+
+	master
+	
+	dev(开发)
+	当要紧急修复bug了
+	1.[dev]将dev中现在正在开发的某一个功能提交到dev
+		git add .
+		git commit -m 'xxx'
+	2.切换回主分支
+		git checkout master
+	3.创建并切换到bug分支
+		git branch bug
+		git checkout bug
+		在bug修复....
+		git add...
+		git commit -m "xxx"
+	4.git checkout master
+		git merge bug
+		git branch -d bug   (删除bug分支)
+		
+	PS: git branch
+	5.切换到dev继续开发
+	  git checkout dev
+	  .....
+	  git add .
+	  git commit -m "开发完成"
+	
+	6.git checkout master
+	  git merge bug
+	
+重点
+- git stash (把红色文件暂存到某个区域)
+- git stash pop (把某个区域的文件拿出来)
+- git branch (查看分支)
+- git branch xxx (创建xxx分支)
+- git branch -d xxx (删除xxx分支)
+- git merge xxx(合并代码)
+- git branch -b xxx (创建并打开xxx)等于一下两条
+	- git branch xxx
+	- git checkout xxx
+- git rebase 合并+将提交记录合并到一条主线-->提交记录整洁
+		如果产生冲突：
+		解决完冲突之后：
+		git rebase --skip

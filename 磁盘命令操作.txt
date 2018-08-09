@@ -1,0 +1,76 @@
+
+	linux的磁盘命令操作:
+		fdisk(MBR)
+		fdisk /dev/sdb
+		fdisk -l 查看系统中所有磁盘或分区详情
+
+			m 显示帮组信息
+			n 新建一个分区
+			p 查看分区
+			q 退出不保存
+			w 退出保存
+			t 改变分区类型
+			l 查看分区类型
+
+	1.利用fdisk工具进行分区
+		ex:partprobe /dev/sdb   让分区立即生效
+	2.进行文件系统创建
+		mkfs -t ext4|xfs|ext3 分区名称
+			ex: mkfs -t ext4 /dev/sdb1
+			ex: mkfs.ext4 /dev/sbd1
+	3.创建挂载点，一般在MNT目录:
+		ex:mkdir /mnt/mount_dir
+	4.进行文件系统挂载
+		ex:mount /dev/sdb1  /mnt/mount_dir #此方法为一次性挂载
+
+		永久挂载修改/etc/fstab文件，此文件为开机自动引导的文件系统
+
+			/dev/sdb1   		/mnt/room/   etx4     		defaults    0            		0
+			所挂载的文件系统     挂载点       文件系统类型     挂载选项   是否需要dump备份  开机磁盘检查顺序
+
+		mount -a 重新挂载
+		注意:此文件修改错误系统将无法启动
+			挂载时建议用uuid号挂载
+			查看磁盘uuid号用blkid命令
+
+	5.查看挂载：
+		mount
+		df -dT
+
+	6.卸载
+		ex:umount /mnt/mount_dir   or  umount /dev/sdb1
+
+	7. 创建交换分区
+	    1.分区
+	    2.创建交换分区文件系统
+	    	mkswap /dev/sdc1
+	    3.挂载
+	    	swapon	/dev/sdc1
+	    4.查看挂载
+	    	swapon -s
+	    	swapon -a 重新挂载
+
+LVM 逻辑卷管理：
+	逻辑卷是linux环境下对磁盘分区进行的管理的一种机制
+	LVM是建立在磁盘的分区之上的一个逻辑层(类似于虚拟化技术)，来提高磁盘管理的一个灵活性
+	特点:
+ 		1.灵活的容量
+ 		2.可伸缩的存储池
+ 		3.在线的数据在分配
+ 		4.方便的设备命名3 
+ 		5.磁盘条带激活
+    注意:
+    	LVM屏蔽了底层磁盘的布局，便于动态调整磁盘容量
+    	/root分区不能应用LVm机制，存放引导文件
+
+    LVM机制的基本概念:
+    	pv：(physical volume)物理卷
+    		利用分区工具(fdisk)得到的普通分区，也可以是整个磁盘
+    		包含许多PE(physical extent 基本单元),默认大小为四兆
+    	VG:(volume group)卷组
+    		由一堆PV组成的资源组，称为卷组
+    	LV：逻辑卷
+    		从VG里面动态划出一部分用于创建文件系统的空间称为LV
+
+
+

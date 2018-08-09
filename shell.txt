@@ -1,0 +1,83 @@
+﻿#####
+	在linux中严格区分大小写
+	在linux中一切皆文本
+# shell
+	概念：Shell 是一种特殊的程序
+	作用：是内核与用户的一种接口
+	shell命令解释器
+	shell一种解释性的语言(内部命令/外部命令)
+		内部命令：系统自带的，随系统内核一起启动 列如:cd(改变路径)
+		外部命令：就是一些额外的软件或者程序    ls(列出文件或者目录)
+	shell的种类
+		sh(Borurne Shell)  csh   ksh
+		BASH 是rhel中默认的一种
+		
+	[root@localhost Desktop]#
+	root:代表当前登录用户
+	localhost: 代表当前系统的主机名称
+	Desktop: 代表当前所在位置
+	#: 这个#代表登录用户是管理员用户
+		root： 管理员 administractor
+	$:代表当前登录用户为普通用户
+		ex:[huahuati@localhost ~]$
+	[root@localhost ~]# su - huahuati
+		su [-] username 切换当前登录
+			有 - ：代表切换bash
+			无 - ：代表不切换bash
+		有root用户到普通用户不需要密码
+		由普通用户到root用户需要密码
+	exit 退出
+	
+	#查看系统当前主机名 hostname
+	[root@localhost Desktop]# hostname
+	localhost.localdomain
+	#修改主机名并让他生效   hostnamectl set-hostname  fun (主机名)
+	[root@localhost Desktop]# hostnamectl set-hostname fun
+	[root@localhost Desktop]# hostname
+	fun
+	[root@localhost Desktop]# su -         su - (切换为root用户)
+	
+	#关机操作
+		poweroff
+		init 0
+		shutdown -h now #现在关机
+		shutdown -h +15 #十五秒后关机
+		halt
+	#重启命令
+		reboot
+		shutdown -r now
+		shutdown -r +15 #十五分钟后重启
+	#准确的shell 命令规范
+		命令字 [选项][参数]
+	#查看当前系统时间
+	    date
+	#查看当前日历
+		cal
+	#查看全年的日历 7 2018
+	cal 年份 #查看全年
+	cal 月份 年份 #查看某年某月
+	
+#网络通讯三种方法
+	#查看系统当前ip地址
+		ifconfig
+		ip addr show
+	#测试网络连通性
+		ping 127.0.0.1
+		ping 127.0.0.1 -c 4 ping的次数
+	1.桥接
+	2.NAT
+		只可以访问外网，但外面不可以访问里面
+	3.仅本地模式
+#BASH常用的快捷方式
+	 CTRL + C 中断当前操作
+	 CTRL + L #清屏
+	 ‘\’ #换行
+	 CTRL + A #光标调到行首
+	 CTRL + E #光标跳到行位
+	 CTRL + U #清除光标前的内容
+	 CTRL + K #清除光标后的内容
+	 history  #查看历史命令，默认保留1000行
+	 ！n      #调用历史命令 ex：！(n=1,2,3,4......)
+	history -c#清除历史命令
+        CTRL + SHIFT + "+"  #放大字体
+	CTRL +  "-"         #缩小字体

@@ -1,0 +1,50 @@
+重定向与管道：
+		作用：将命令的执行结果输出到指定的文件中，而不时直接显示在屏幕上
+		0 标准输入： 键盘   stdin  仅读取操作
+		1 标准输出： 终端   stdout 仅写入
+	    2 标准错误： 终端   stderr 仅写入
+
+	    在linux中构建了一个带有编号标记的通道(文件描述符)的进程结构来管理打开
+	    文件通过进程连接到文件，进行文件数据的操作 
+
+
+	    					重定向
+	    			作用：将命令的执行结果输出到指定文件中，而不是直接显示在屏幕上
+
+			类型					操作符(1可不写)				用途
+
+重定向标准输出                	1>					将命令的执行结果输出到指定文件中，
+													而不是显示在屏幕上这是一个，覆盖写							 
+								1>>                 标准输出追加写
+
+重定向标准错误               		2>                  将标准错误信息保存到指定文件中，
+												    进行覆盖写
+								2>>                 将标准错误信息保存到指定文件中，
+												    进行追击写
+
+重定向标准输出和标准错误          &>					将标准输出和错误输出全部保存到，
+													指定文件中,进行覆盖写
+								&>>					将标准输出和错误输出全部保存到，
+													指定文件中，进行追加写
+
+命令列子： 1>    history > history.txt   (把历史命令写到history文件中)
+				find/ -user huahuati > history.txt (会覆盖上面的history文件内容)
+
+		  1>>   ls >> history  (把ls展示的所有目录追加到上述的history文件中)
+
+		  2>    find / -user huahuati 2> error.txt
+		  
+		  2>>   find / -user huahuati 2>> error.txt
+find / -user huahuati >true.txt 2>false.txt (将错误与正确的分别保存到不同的文件当中)
+
+		  &>    find . -user huahuati &> trueandfalse.txt
+find/ -user huahuati >> true.txt 2> /dev/null
+
+
+管道：传送		标识符号       用途  
+					|         将管道前面的输出结果作为后面语句的条件执行
+							  语句1 | 语句2 |
+
+应用：
+	ls -l /usr/bin | more
+	ls | wc -l > /tmp/rootdir
