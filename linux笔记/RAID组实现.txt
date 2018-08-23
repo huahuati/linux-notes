@@ -1,0 +1,133 @@
+linux下通过mdadm命令实现软件RAID配置
+	1.配置yum源
+	2. yum install mdadm -y
+	3.man mdadm
+
+mdadm常用模式：
+	Assemble：装配模式，将原来属于一个阵列的每个块设备组装为阵列
+	Build：创建一个不需要元数据的阵列（超级块），没个设备没有元数据块
+	Create：创建一个新的阵列，每个设备都有超级块
+		--create ==  -C  创建一个新的阵列  
+		--level   == -l    设置RAID组级别
+		--raid-devices == -n    设置设备活动个数
+		--spare-devices == -x    设置备用盘的个数
+		--chunk == -c  chunk默认64K
+	Monitor：监控模式，监控RAID状态，可以实现全局热备
+		--follow ==-F   选择监控模式
+		--syslog == -y  事件日志记录
+		--delay == -d    设置raid轮循，默认时间60s
+		--test == -t   生成警告信息
+	Grow：修改阵列属性（阵列磁盘个数，使用容量）
+		--grow == -G    修改阵列大小或设备数量
+		--raid-devices == -n  活动设备个数
+		--chunk == -c   设置CHUNK大小
+		--level == -l   设置等级
+		--name == -N    设置阵列名称
+	Incremental Assembly：添加一个设备带阵列中
+	Misc：报告或者修改阵列中相关设备信息
+		--query==-Q  查询一个RAID或者RAID组件设备信息
+		--detail == -D  查看RAID组详细信息
+		--stop==—S  停止RAID组
+	Auto-detect：要求在linux内核启动时自动检测阵列  
+
+
+
+
+
+#RAID0实现过程
+	1.进行软件安装安装跟新：
+		yum install mdadm -y
+	2.准备俩块raid0的成员盘并进行分区
+		fdisk /dev/sdb 
+			Command (m for help): t
+			Selected partition 1
+			Hex code (type L to list all codes): fd
+			Changed type of partition 'Linux' to 'Linux raid autodetect'
+
+			Command (m for help): p
+
+			Disk /dev/sdc: 21.5 GB, 21474836480 bytes, 41943040 sectors
+			Units = sectors of 1 * 512 = 512 bytes
+			Sector size (logical/physical): 512 bytes / 512 bytes
+			I/O size (minimum/optimal): 512 bytes / 512 bytes
+			Disk label type: dos
+			Disk identifier: 0xe2b54778
+
+			   Device Boot      Start         End      Blocks   Id  System
+			/dev/sdc1            2048    41943039    20970496   fd  Linux raid autodetect
+
+			Command (m for help): w
+			The partition table has been altered!
+
+
+		fdisk /dev/sdc同上   
+	3.准备完磁盘后，检查磁盘是否正确定义RAID
+		[root@localhost ~]# mdadm --examine /dev/sd[b-c]
+		/dev/sdb:
+		   MBR Magic : aa55
+		Partition[0] :     41940992 sectors at         2048 (type fd)
+		/dev/sdc:
+		   MBR Magic : aa55
+		Partition[0] :     41940992 sectors at         2048 (type fd)
+		[root@localhost ~]# mdadm --examine /dev/sd[b-c]1
+		mdadm: No md superblock detected on /dev/sdb1.
+		mdadm: No md superblock detected on /dev/sdc1.
+		[root@localhost ~]# 
+	4.创建RAID0（/dev/md0）
+		mdadm -C /dev/md0  -l raid0 -n 2 /dev/sd[b-c]1
+
+
+		[root@localhost ~]# mdadm --create /dev/md0 --level=stripe --raid-devices=2 /dev/sd[bc]1
+		mdadm: Defaulting to version 1.2 metadata
+		mdadm: array /dev/md0 started.
+		[root@localhost ~]# 
+
+	5.查看RAID组状态：
+		[root@localhost ~]# cat /proc/mdstat 
+		Personalities : [raid0] 
+		md0 : active raid0 sdc1[1] sdb1[0]
+		      41939968 blocks super 1.2 512k chunks
+		      
+		unused devices: <none>
+		[root@localhost ~]# 
+	查看RAID组级别：
+		[root@localhost ~]# mdadm -E /dev/sd[bc]1
+
+	查看RAID组设备
+		[root@localhost ~]# mdadm --detail /dev/md0
+
+	6.针对RAID组进行文件系统创建
+		[root@localhost ~]# mkfs -t ext4 /dev/md0 
+	7.创建挂载目录并进行永久挂载
+		[root@localhost ~]# mkdir /mnt/raid0
+		[root@localhost ~]# mount /dev/md0 /mnt/raid0/
+		[root@localhost ~]# df -hT
+
+		永久挂载：
+			[root@localhost ~]# vim /etc/fstab 
+			[root@localhost ~]# cat /etc/fstab 
+
+			#
+			# /etc/fstab
+			# Created by anaconda on Wed Jul  4 21:57:46 2018
+			#
+			# Accessible filesystems, by reference, are maintained under '/dev/disk'
+			# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+			#
+			/dev/mapper/rhel-root   /                       xfs     defaults        1 1
+			UUID=cce16428-f4df-48c8-96a4-1e7e68e9343b /boot                   xfs     defaults        1 2
+			/dev/mapper/rhel-swap   swap                    swap    defaults        0 0
+			/dev/md0	/mnt/raid0	ext4	defaults	0 0 
+			[root@localhost ~]# mount -a
+	8.保存RAID组配置：
+		[root@localhost ~]# mdadm --detail --scan  --verbose >> /etc/mdadm.conf
+		[root@localhost ~]# cat /etc/mdadm.conf 
+		ARRAY /dev/md0 level=raid0 num-devices=2 metadata=1.2 name=localhost.localdomain:0 UUID=da3e0615:320a0e62:6115b620:3775dce4
+		   devices=/dev/sdb1,/dev/sdc1
+		[root@localhost ~]# 
+	9.使用RAID组：
+		echo "这是一个RAID0阵列测试文件" > /mnt/raid0/test.conf
+
+
+
+
