@@ -8,7 +8,7 @@ mdadm常用模式：
 	Build：创建一个不需要元数据的阵列（超级块），没个设备没有元数据块
 	Create：创建一个新的阵列，每个设备都有超级块
 		--create ==  -C  创建一个新的阵列  
-		--level   == -l    设置RAID组级别
+		--level   == -l    设置RAID组级别     raid0 raid1 等
 		--raid-devices == -n    设置设备活动个数
 		--spare-devices == -x    设置备用盘的个数
 		--chunk == -c  chunk默认64K
@@ -83,6 +83,7 @@ mdadm常用模式：
 		[root@localhost ~]# 
 
 	5.查看RAID组状态：
+		[root@localhost ~]# watch -n1 cat /proc/mdstat(每秒一次进行查看)
 		[root@localhost ~]# cat /proc/mdstat 
 		Personalities : [raid0] 
 		md0 : active raid0 sdc1[1] sdb1[0]
@@ -127,6 +128,10 @@ mdadm常用模式：
 		[root@localhost ~]# 
 	9.使用RAID组：
 		echo "这是一个RAID0阵列测试文件" > /mnt/raid0/test.conf
+
+	dd 命令直接写入磁盘(测试磁盘压力)
+	dd if=/dev/zero of=/dev/md10 bs=256M count=1 oflag=dsync
+
 
 
 

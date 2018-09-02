@@ -1,0 +1,184 @@
+Time：2018/8/27
+Object：linux下的进程管理
+
+
+
+
+
+#RAID5实现过程以及故障模拟
+
+
+1.检查环境并添加磁盘
+	mdadm命令是否存在
+	添加所需磁盘
+	检查磁盘是否已经存在raid
+		mdadm -E /dev/sd[b-e]
+2.对磁盘进行分区，并将磁盘分区类型改为fd（raid模式）
+	fdisk进行磁盘分区，并将磁盘分区类型定义为RAID类型
+	让分区立即生效
+	partx -a /dev/sd[b-e]   ==  partprobe  /dev/sd[b-e]
+3.分区创建完成后继续检查环境
+	mdadm -E /dev/sd[b-e]1
+4.创建RAID组，此处创建RAID5
+	mdadm -C /dev/md5 -l 5 -n 3 -x 1 /dev/sd[b-e]1
+5.实时查看创建动态
+	watch -n1 cat /proc/mdstat
+6.查看RAID组详细信息
+	mdadm --detail /dev/md5
+7.创建文件系统并进行使用RAID组
+	  mkfs -t ext4 /dev/md5 
+	  mkdir /mnt/raid5
+	  vim /etc/fstab 
+	  	/dev/md5	/mnt/raid5	ext4	defaults	 0 0
+	  mount -a
+	  df -hT
+
+	  echo 'Hello World' > /mnt/raid5/test.conf
+8.写入RAID组配置文件
+	mdadm --detail --scan --verbose  >>  /etc/mdadm.conf
+
+9.故障模拟
+	9.1 模拟硬盘损坏
+		mdadm  /dev/md5  --fail /dev/sdb1
+	9.2 在存在热备盘的情况下，RAID自动重构，若没有热背盘，故障盘数在RAID组冗余范围内，则依旧工作，只不过状态为降级状态
+		"""
+         Layout : left-symmetric
+		     Chunk Size : 512K
+
+		 Rebuild Status : 10% complete
+
+		           Name : localhost.localdomain:5  (local to host localhost.localdomain)
+		           UUID : 7f1515d8:a3ae73db:efd31682:599d63a4
+		         Events : 25
+
+		    Number   Major   Minor   RaidDevice State
+		       3       8       65        0      spare rebuilding   /dev/sde1
+		       1       8       33        1      active sync   /dev/sdc1
+		       4       8       49        2      active sync   /dev/sdd1
+
+		       0       8       17        -      faulty   /dev/sdb1
+		"""
+	9.3 移除故障盘
+		mdadm /dev/md5 --remove /dev/sdb1
+	9.4 修复故障磁盘
+		mdadm --zero-superblock --force /dev/sdb1
+	9.5 将新的工作磁盘（此为热备）加入到RAID组中
+		mdadm /dev/md5 --add /dev/sdb1
+	9.6 检查RAID组状态
+		mdadm  --detail /dev/md5
+
+
+
+
+
+
+
+#linux下进程管理
+	
+	#程序与进程的关系
+		程序：保存在硬盘/光盘等介质中的可执行代码和数据
+			 程序是静态保存的代码
+		进程：在CPU/内存中运行的程序代码
+			  动态运行的代码
+			  父，子进程：每一个进程可以创建一个或者多个进程
+
+	#在linux下查看系统进程状态
+		1.图形界面进行查看
+			Applications -> System Tools -> System Monitor
+		2.静态查看系统进程
+			ps命令：
+				用途：查看静态的进程统计信息
+				格式：ps -aux
+				选项：
+					a:显示当前终端下的所有进程信息
+					u:使用以用户为主的格式输出进程信息
+					x:显示当前用户在所有终端下的进程信息
+			ps命令解析：
+				USER：当前进程的属主（用户名）
+				PID：代表进程唯一标识
+				%CPU：代表占用CPU时间与总时间的百分比
+				%MEM：占用内存占总内存的百分比
+				VSZ：占用虚拟内存的空间(单位KB)
+				RSS：进程占用的内存空间（单位KB）
+				TTY：代表终端，
+					？ 代表与终端机无关
+					tty1~tty6代表本机上面的登入者程序
+					pts/0 代表网络连接
+				STAT：代表进程状态：
+					R：代表该进程正在运行
+					S:代表该程序睡眠状态
+					T:代表该程序已经停止运行或者说侦测
+					Z：代表该进程已经停止，但是依旧在使用系统资源，称为僵尸进程
+				START：代表进程启动时间
+				TIME：代表进程占用了CPU运作的多长时间
+				COMMADN：代表该进程是由哪个程序发起的
+		3.动态查看系统进程：
+			top：动态查看系统进程信息
+			top内容解析：
+				第一行：
+					top - 
+					08:49:27   代表当前系统时间
+					up  1:17,  系统运行多长时间啦
+					3 users,  	当前登陆用户数
+					load average: 0.03, 0.07, 0.16    系统的平均负载（每1,5,15MIN的平均负载）
+				第二行：
+					Tasks: 485 total,   总得进程数
+					1 running, 			正在运行的进程数
+					484 sleeping,   	睡眠状态的运行数
+					0 stopped,   		stop状态的运行数
+					0 zombie			僵尸状态的运行数
+				第三行：
+					%Cpu(s):  CPU状态信息
+					5.5 us,   代表用户空间占CPU额百分比
+					1.0 sy,   内核空间占用CPU的百分比
+					0.0 ni,   改变过优先级的进程占用CPU的百分比
+					93.5 id,  空闲CPU百分比
+					0.0 wa,   IO等待占用CPU的百分比
+					0.0 hi,  硬中断占用CPU的百分比
+					0.0 si,  软中断占用CPU的百分比
+					0.0 st
+				第四行：
+					KiB Mem:   内存信息
+					2035580 total,   总内存
+					1338700 used,   已经使用的
+					696880 free,	空闲的     
+					1492 buffers    缓存的内存量
+				第五行：
+					KiB Swap: 交换分区信息  
+					2113532 total,    总量
+					0 used,           使用占有量
+					2113532 free.     空闲交换分区量
+					353092 cached Mem    穿冲区交换分区总量
+				第六行：空行
+				第七行：
+				   PID    进程ID号
+				   USER   进程属主
+				   PR     进程优先级
+				   NI     同上，负值越低优先级越高，也就是负值的优先级高于正直的优先级
+				   VIRT   代表进程使用的虚拟内存量
+				   RES    进程占用的物理内存量
+				   SHR    共享内训大小
+				   S      进程状态
+				   %CPU   进程CPU时间占用比
+				   %MEM   进程MEN占用比
+				   TIME+  进程运行时间
+				   COMMAND   进程命令    
+			#top常用选项：
+				P：根据CPU占用情况对进程列表进行排序
+				M：根据内存占用情况进行排序
+				N：根据启动时间进行培训
+				h/?:进行帮助信息查看
+				k:结束进程（9：强制结束进程）
+				r：修改优先级(NI)
+				可以使用空格强制更新进程状态显示
+				q:正常退出
+
+			#进程命令
+				kill：用于终止指定PID号的进程
+				killall：用于终止指定名称的所有进程
+				-9：强制终止
+
+				pgrep：根据特定条件查找进程PID信息
+					-l:列出进程的名称
+					-U:根据进程所属的用户名进行查找
+					-t：根据进程所在终端进行查找

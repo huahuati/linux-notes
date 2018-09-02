@@ -1,0 +1,80 @@
+Time：2018/8/31
+Object：linux服务管理
+
+
+#系统的运行级别：
+	每种运行级别代表特定的操作模式，分为七个级别，分别用数字0-6表示
+
+
+			rhel7之前：                                   rhel7
+
+		0   关机                                         poweroff.target       关机
+		1	单用户用户，主要用于系统修复				     rescue.target         救援模式
+		2	不完全的命令行模式，不包含NFS				     multi-user.target   非图形界面的多用户方式
+		3	完全命令行模式，标准字符界面					 multi-user.target   非图形界面的多用户方式
+		4   系统保留										 multi-user.target   非图形界面的多用户方式
+		5   图形模式						                 graphical.target    图形界面的多用户模式
+		6   重启											 reboot.target	     重启
+
+
+	#运行级别的切换与查看：
+		rhel7之前：
+			init 运行级别编号        #改变运行级别
+			runlevel      #查看当前运行级别
+		rhel7：
+			systemctl get-default      #查看系统的默认运行级别
+			systemctl set-default multi-user.target       #设置当前系统默认的运行级别为multi-user.target
+			systemctl isolate graphical.target          #将运行级别切换到graphical.target
+
+	#linux服务的管理：
+		rhel6服务管理：
+			命令：service
+			格式：service  服务名    start/stop/restart/status
+			#设置服务是否开机自启：
+				命令：chkcongfig
+				格式：chkconfig 服务名 on/off  [--level 运行级别]
+				查看服务随系统启动的状态：
+					chkconfig  --list  [服务名]
+
+		rhel7服务管理（systemctl集成了service，chkconfig）
+			格式： systemctl   start/stop/status/restart/enable/disable   服务名
+
+		#表示服务状态的几个关键字：
+			loaded：单元配置文件已经处理
+			active(running):   服务运行正常
+			active(exited):	   已经成功完成一次性配置
+			active(waiting):   运行中，但正在等待事件
+			inactive：不在运行
+			enabled:将在系统启动时自启
+			disabled：不随系统开机自启
+			ststic：无法启用，但是可以由某一启用的单元自动启动
+
+		#常用systemctl命令：
+			#查询所有单元状态：
+				systemctl
+			#查询服务单元状态：
+				systemctl  --type=service
+			#查看任何服务单元状态
+				systemctl   status   sshd   -l 
+			#判断某个服务单元是否活动：
+				systemctl is-active  sshd
+				systemctl is-enabled sshd
+			#查看所有单元的已启用和已禁用设置，也可以选择单元类型：
+				systemctl list-unit-files  --type=service
+			#仅仅查看失败的服务：
+				 systemctl --failed --type=service
+
+
+#Apache基础服务搭建：
+	软件名：Apache
+	软件包名：httpd
+	配置文件：/etc/httpd/conf/httpd.conf
+	默认根目录（Documentroot）:/var/www/html
+	首页文件：index.html
+
+
+
+
+
+#FTp/NFS/BBS
+

@@ -1,0 +1,80 @@
+练习题：2018-07-23
+	
+	利用yum安装tree工具包与http服务
+
+	在web服务器初期，由于经常编辑Apache配置文件，请为该配置文件定义别名confighttp
+
+		/etc/httpd/conf/httpd.conf
+
+
+……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+
+1.	创建指定用户和组。
+	增加usergrp组，GID号为6000。
+		groupadd -g 6000 usergrp
+	新增user1用户，UID号为6000，密码为空，并将其附属组加入usergrp组中。
+		useradd -u 6000 -G usergrp user1
+	新增user2用户，密码为password，将用户的附属组加入root组和usergrp组。用户的主目录为/user2目录。	
+		useradd  -d /user2 -G root,usergrp user2
+		passwd user2
+		echo 'password' | passwd --stdin user2
+	新增user3用户，不为用户建立并初始化宿主目录，用户不允许登陆到系统的shell。
+		useradd -M -s /sbin/nologin user3
+2.	设置用户的密码期限
+	设置user1用户，在下次登录时必须强制更改密码。
+		chage -d 0 user1
+	设置user2用户，密码30天必须更改密码，账号在2016年10月10日过期。
+		chage -d 30 -E 2016-10-10  user2
+3.	新建目录/var/www/user1，并设置如下权限：
+		mkdir /var/www/user1  -p
+	将此目录的所有者设置为user1，并设置读写执行权限 rwx  421   7
+	将此目录的组设置为usergrp，并设置读执行权限  5
+		chown user1:usergrp  /var/www/user1     [-R]
+	将其它用户的权限设置为只读  r  4
+		chmod o=r--  /var/www/user1
+		chmod 754 /var/www/user1
+
+
+……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+
+	创建一个共享组ateam，该组中拥有俩个新用户andy与alice，这俩个账号的密码是password
+		groupadd ateam
+		useradd -G ateam andy
+		useradd -G ateam alice
+		echo 'password' | passwd --stdin andy
+		echo 'password' | passwd --stdin alice
+	在/home中创建名为ateam-text的目录
+		mkdir /home/ateam-text
+	将ateam-text目录的组所有权限更改为ateam
+		chown :ateam  /home/ateam-text/
+	确保ateam-text的权限允许组成员创建和删除文件
+		chmod g+w /home/ateam-text/
+	确保ateam-text的权限禁止其他人访问其文件
+		chmod 770 /home/ateam-text/
+
+ 	find 找出 当前目录下的 目录和普通文件？ 找出当前目录下10天没有改变，大小大于4K的普通文件或目录
+ 		find . -type d -o -type f  -size +4k  ! mtime -10
+ 	
+
+	用三种方法在文件hello.txt中增加一行内容
+
+			vim/gedit  hello.txt
+			echo 'I am one shuaige' >> hello.txt
+			cat >> hello.txt << END
+
+
+
+
+
+	拷贝文件/etc/fstab到/var/tmp/fstab。配置文件/var/tmp/fstab的权限
+		cp /etc/fstab /var/tmp/fstab
+	文件/var/tmp/fstab的拥有者是root用户
+	文件/var/tmp/fstab属于root组
+	文件/var/tmp/fstab对任何人都不可执行
+	用户natasha能够对文件/var/tmp/fstab执行读和写操作
+	用户harry对文件/var/tmp/fstab即不能读，也不能写
+	所有其他用户（当前的和将来的）能够对文件/var/tmp/fstab进行读操作
+
+		[root@localhost ~]# useradd harry && useradd natasha
+		[root@localhost ~]# setfacl -m u:natasha:wr  /var/tmp/fstab 
+		[root@localhost ~]# setfacl -m u:harry:---  /var/tmp/fstab
