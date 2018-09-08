@@ -1,0 +1,171 @@
+服务管理&基础网络配置
+
+
+
+
+
+#Apache基础服务搭建：
+	软件名：Apache
+	软件包名：httpd
+	配置文件：/etc/httpd/conf/httpd.conf
+	默认根目录（Document:/var/www/html）
+	首页文件：index.html
+
+
+	课题：模拟LAMP环境，搭建简单bbs论坛
+
+		1.配置yum源,联通网络
+		2.安装相对应软件包：httpd、mariadb,mariadb-server,php,php-mysql
+		3.开启httpd服务，并让服务开机自启，【关闭防火墙，或者让防火墙允许该服务通过】
+			[root@localhost yum.repos.d]# systemctl start httpd
+			[root@localhost yum.repos.d]# systemctl enable httpd
+
+
+			[root@localhost yum.repos.d]# firewall-cmd --permanent --add-service=http
+			[root@localhost yum.repos.d]# firewall-cmd --reload 
+
+			或者直接关闭防火墙：
+
+            [root@localhost yum.repos.d]# systemctl stop firewalld
+			[root@localhost yum.repos.d]# systemctl disable firewalld
+
+			#查看服务状态：
+			   21  systemctl status httpd
+   				22  systemctl status firewalld
+		4.开启mysql服务，让mysql服务开机自启，并设置mysql服务密码
+			#mariadb服务启动
+				   31  systemctl start mysql
+				   32  systemctl start mariadb
+				   33  systemctl enable mariadb
+				   34  systemctl status mariadb
+		    #设置mysql服务密码;
+		    	mysql_secure_installation
+
+
+		    #准备安装文件，拷贝至/var/www/html
+
+		           44  cp -p Discuz_X2.5_SC_UTF8.zip /var/www/html/
+				   45  cd /var/www/html/
+				   47  unzip Discuz_X2.5_SC_UTF8.zip 
+				   49  mv upload/ bbs
+				   51  chmod 777 bbs/ -R
+				   52  setenforce 0
+				   54  systemctl restart httpd
+			#准备完成后，在浏览器中输入http://127.0.0.1/bbs开始安装bbs论坛
+
+
+
+#仅下载FTP服务器搭建
+	FTP(file Transfer Protocol)文件传输协议
+	#常见客户端：
+		浏览器、ftp命令，lftp，cuteftp
+	#常用服务端软件
+		IIS、Serv-U，wu-Ftpd，vsftpd，proftpd
+
+	#部署FTP服务;
+		软件名：vsftpd
+		服务名：vsftpd
+		配置文件：/etc/vsftpd/vsftpd.conf
+		匿名用户的默认共享目录：/var/ftp/pub
+
+		#用户类型
+			#匿名用户
+				ftp/anonymous
+			#本地用户
+				passwd,shadow
+			#虚拟用户
+				使用独立的账号/密码数据文件
+
+	#服务端配置
+		1.安装软件包   vsftpd
+		2.启动服务/防火墙设置
+		3.配置服务
+		4.重启服务进行访问
+			"""
+			   77  yum install vsftpd -y
+			   78  vim /etc/vsftpd/vsftpd.conf 
+			   79  cp anaconda-ks.cfg initial-setup-ks.cfg /var/ftp/pub/
+			   80  systemctl restart vsftpd
+			   81  systemctl enable vsftpd
+			   82  systemctl status vsftpd
+
+			"""
+	#客户端配置
+		使用lftp客户端
+			安装lftp客户端软件
+			进行访问ftp服务器
+				lftp 127.0.0.1
+
+
+
+
+#配置NFS服务
+	NFS 网络文件系统用于类unix系统之间进行文件共享
+
+
+	#服务端配置
+		1.关闭防火墙
+		2.安装nfs服务    nfs-utils
+		3.启动服务  nfs-server
+		4.准备共享目录
+		3.配置nfs服务
+		5.重启服务共享完成 /etc/exports
+
+
+	#客户端配置
+		1.查看共享是否成功
+			[root@client ~]# showmount -e 192.168.0.3
+			Export list for 192.168.0.3:
+			/share *
+			[root@client ~]# 
+		2.创建挂载点，并进行挂载
+			   92  mkdir /mnt/share
+			   93  mount -t nfs 192.168.0.3:/share /mnt/share/
+			   94  df -hT
+		3.建议永久挂载：
+			[root@client ~]# cat /etc/fstab 
+
+			#
+			# /etc/fstab
+			# Created by anaconda on Fri Aug 31 14:36:12 2018
+			#
+			# Accessible filesystems, by reference, are maintained under '/dev/disk'
+			# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+			#
+			/dev/mapper/rhel-root   /                       xfs     defaults        1 1
+			UUID=e28868e0-1e34-4acb-8540-9a753c96add4 /boot                   xfs     defaults        1 2
+			/dev/mapper/rhel-swap   swap                    swap    defaults        0 0
+			192.168.0.3:/share	/mnt/share	nfs	defaults	0 0 
+			[root@client ~]# 
+		4.创建文件可以使用
+
+
+
+
+
+
+#基础网络配置
+	
+	#主机名设置
+		#rhel6
+			#查看主机名：
+				hostname
+			#修改主机名
+				vim /etc/sysconfig/network
+
+				注：必须重启生效
+		#rhel7
+			#查看主机名：
+				hostname
+			#修改主机名;
+				hostnamectl set-hostname 主机名
+			#su -
+
+	#/etc/hosts
+		存放主机名与ip地址之间的对应关系
+
+
+	#相关文件：
+		/etc/host.conf    指定域名搜索顺序
+		/etc/host.allow   指定允许登陆的设备
+		/etc/host.deny	  指定禁止登陆的设备
